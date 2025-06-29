@@ -80,9 +80,8 @@ async def obtenirReponseUtilisateur(ctx, question, bot):
 
 
 async def verifier_reponse_utilisateur(client, nom_modele, question, bonne_reponse, reponse_utilisateur):
-    print(reponse_utilisateur)
     invite = f"""
-Tu es un assistant chargé d'évaluer si la réponse d'un utilisateur est correcte à une question de quiz. Sois tolérant sur la réponse.
+Tu es un assistant chargé d'évaluer si la réponse d'un utilisateur est correcte à une question de quiz.
 
 Voici la question posée :
 {question}
