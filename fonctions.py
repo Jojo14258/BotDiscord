@@ -4,22 +4,46 @@ import database
 import os
 import mysql.connector
 import asyncio
+import random
 from dotenv import load_dotenv
 load_dotenv()
 
 
 # Fonction pour générer une question de spécialité
+import random
+
 async def generer_question_et_reponse(client, model_name):
-    """Génère une question et réponse en utilisant le client OpenAI et le modèle spécifié."""
+    """Génère une question et réponse pour une spécialité choisie aléatoirement."""
+
+    # Choix aléatoire de spécialité côté Python
+    specialites = ["Maths", "NSI", "Physique-Chimie", "SVT", "SES", "HGGSP"]
+    specialite_choisie = random.choice(specialites)
+
+    # Création du prompt avec spécialité injectée
+    prompt = f"""
+Tu es un assistant qui génère des questions de quiz pour le lycée.
+
+Génère une question de quiz courte, simple et faisable rapidement pour un élève de terminale, dans la spécialité suivante : {specialite_choisie}.
+
+Donne uniquement la question suivie de sa réponse attendue, dans ce format :
+
+Sujet: {specialite_choisie}
+Question: [Texte de la question]
+Réponse: [La bonne réponse]
+"""
+
+    # Appel à l'API OpenAI
     response = client.chat.completions.create(
+        model=model_name,
         messages=[
-            {"role": "system", "content": "Tu es un assistant qui génère des questions de quiz pour le lycée."},
-            {"role": "user", "content": "Génère une question de quiz courte et réalisable sans trop réfléchir pour un élève de lycée en terminale dans une spécialité choisie au hasard parmi : Maths, NSI, Physique-Chimie, SVT ou SES, HGGSP. ATTENTION : le choix du type de question doit bien être aléatoire ! Donne uniquement la question suivie de sa réponse attendue, dans ce format :\n\nSujet: [Nom de la spécialité]\nQuestion: [Le texte de la question]\nRéponse: [La bonne réponse]"}
+            {"role": "system", "content": "Tu es un assistant qui génère des questions de quiz pour des lycéens."},
+            {"role": "user", "content": prompt}
         ],
-       #  temperature=0.5,
-      #  max_tokens=500,
-        model=model_name
+        temperature=0.5,
+        max_tokens=500
     )
+
+    # Retourne la question complète, déjà formatée
     return response.choices[0].message.content.strip()
 
 
@@ -81,7 +105,7 @@ async def obtenirReponseUtilisateur(ctx, question, bot):
 
 async def verifier_reponse_utilisateur(client, nom_modele, question, bonne_reponse, reponse_utilisateur):
     invite = f"""
-Tu es un assistant chargé d'évaluer si la réponse d'un utilisateur est correcte à une question de quiz.
+Tu es un assistant bienveillant et sympathique chargé d'évaluer si la réponse d'un utilisateur à un quiz est correcte.
 
 Voici la question posée :
 {question}
@@ -89,18 +113,21 @@ Voici la question posée :
 Voici la bonne réponse attendue :
 {bonne_reponse}
 
-Voici la réponse donnée par l'utilisateur :
+Voici ce que l'utilisateur a répondu :
 {reponse_utilisateur.content}
 
-Ta tâche :
-1. Détermine si la réponse est correcte ou incorrecte.
-2. Commence toujours par "✅ Correct :" ou "❌ Incorrect :".
-3. En cas de mauvaise réponse, **donne la bonne réponse correcte avec une explication simple**.
-4. Termine toujours par [OK=true] si la réponse est correcte, sinon [OK=false].
-5. Adresse-toi directement à l’utilisateur avec un ton clair et bienveillant.
+Ta mission :
+1. Indique si la réponse est correcte ou non.
+2. Commence toujours par "✅ Bien joué !" si c'est correct, ou "❌ Oups..." si c'est incorrect.
+3. Si la réponse est fausse, donne la bonne réponse, avec une explication claire, simple et sans jugement.
+4. Termine par [OK=true] si la réponse est correcte, sinon [OK=false].
+5. Utilise un ton amical, motivant et encourageant – comme un prof sympa qui veut aider.
 
-Exemple attendu :
-❌ Incorrect : La réponse "..." est incorrecte. La bonne réponse est : ...
+Exemples :
+✅ Bien joué ! Ta réponse est correcte. (...)
+[OK=true]
+
+❌ Oups... Ce n’est pas tout à fait ça. La bonne réponse est : (...). Mais ne t’inquiète pas, tu vas progresser ! 💪
 [OK=false]
 """
 
