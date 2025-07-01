@@ -23,7 +23,7 @@ async def generer_question_et_reponse(client, model_name):
     prompt = f"""
 Tu es un assistant qui génère des questions de quiz pour le lycée.
 
-Génère une question de quiz courte, simple et faisable rapidement pour un élève de terminale, dans la spécialité suivante : {specialite_choisie}.
+Génère une question de quiz complexe mais résolvable en moins de 30 secs pour un élève de terminale mais qui est toujours du niveau, dans la spécialité suivante : {specialite_choisie}.
 
 Donne uniquement la question suivie de sa réponse attendue, dans ce format :
 
@@ -67,16 +67,22 @@ def enregistrer_challenge_en_base(texte):
     sujet = ""
     question = ""
     reponse = ""
-
+    capture_question = False
+    question_lignes = []
     # Cherche les valeurs
     for ligne in lignes:
         if ligne.startswith("Sujet:"):
             sujet = ligne.replace("Sujet:", "").strip()
         elif ligne.startswith("Question:"):
-            question = ligne.replace("Question:", "").strip()
+            question_lignes.append(ligne.replace("Question:", "").strip())
+            capture_question = True
         elif ligne.startswith("Réponse:"):
             reponse = ligne.replace("Réponse:", "").strip()
-
+            capture_question = False
+        elif capture_question:
+            question_lignes.append(ligne)
+            
+    question = "\n".join(question_lignes).strip()
     titre = f"Quiz - {sujet}"
 
     database.cursor.execute(

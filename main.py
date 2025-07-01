@@ -59,6 +59,7 @@ async def quizz(ctx):
     await actualiserBDUtilisateur(ctx)
     # Génère la question + réponse
     questionRep = await generer_question_et_reponse(client, model_name)
+    print("QUESTION COMPLÈTE :", questionRep)
 
     # Insère dans la base de données, et récupère juste la question pour l'affichage
     questionEnvoye, reponseAttendu = enregistrer_challenge_en_base(questionRep)
