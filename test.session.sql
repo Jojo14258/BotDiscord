@@ -1,4 +1,0 @@
-DELETE FROM users 
-WHERE id = 666;
-
-COMMIT;

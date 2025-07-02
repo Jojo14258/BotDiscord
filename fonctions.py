@@ -12,7 +12,7 @@ load_dotenv()
 # Fonction pour générer une question de spécialité
 import random
 
-async def generer_question_et_reponse(client, model_name):
+async def generer_question_et_reponse(client, model_name, difficulte):
     """Génère une question et réponse pour une spécialité choisie aléatoirement."""
 
     # Choix aléatoire de spécialité côté Python
@@ -39,7 +39,7 @@ Réponse: [La bonne réponse]
             {"role": "system", "content": "Tu es un assistant qui génère des questions de quiz pour des lycéens."},
             {"role": "user", "content": prompt}
         ],
-        temperature=0.5,
+        temperature=0.9,
         max_tokens=500
     )
 
@@ -59,7 +59,7 @@ def verifier_connexion_mysql():
         )
         database.cursor = database.db.cursor() 
 
-def enregistrer_challenge_en_base(texte):
+def enregistrer_challenge_en_base(texte, difficulte):
     verifier_connexion_mysql()
     # Coupe les lignes
     lignes = texte.split("\n")
@@ -69,6 +69,7 @@ def enregistrer_challenge_en_base(texte):
     reponse = ""
     capture_question = False
     question_lignes = []
+    valeurPoints = difficulte*5 #difficulté 1  : 5 pts, difficulte 2 : 10 pts et difficulté 3 : 15 pts
     # Cherche les valeurs
     for ligne in lignes:
         if ligne.startswith("Sujet:"):
@@ -86,12 +87,26 @@ def enregistrer_challenge_en_base(texte):
     titre = f"Quiz - {sujet}"
 
     database.cursor.execute(
-        "INSERT INTO challenges (title, question, answer_expected, subject, difficulty, published_at) VALUES (%s, %s, %s, %s, %s, %s)",
-        (titre, question, reponse, sujet, 1, datetime.now().date())
+        "INSERT INTO challenges (title, question, answer_expected, subject, difficulty, published_at, points_value) VALUES (%s, %s, %s, %s, %s, %s, %s)",
+        (titre, question, reponse, sujet, difficulte, datetime.now().date(), valeurPoints)
     )
     database.db.commit()
 
-    return question, reponse  # Pour l'afficher ensuite dans Discord
+    database.cursor.execute("SELECT id FROM challenges ORDER BY id DESC LIMIT 1;")
+    idChallenge = database.cursor.fetchone()[0]
+
+    return question, reponse, idChallenge  # Pour l'afficher ensuite dans Discord et le stockage dans les autres bases de données
+
+def enregistrerReponse(ctx, idChallenge, reponseUtilisateur, estCorrect):
+    idUtilisateur = ctx.author.id
+    dateEnvoi = datetime.now().date()
+
+    database.cursor.execute(
+        "INSERT INTO submissions (user_id, challenge_id, response, is_correct, submitted_at) VALUES (%s, %s, %s, %s, %s)",
+        (idUtilisateur, idChallenge, reponseUtilisateur.content, estCorrect, dateEnvoi)
+    )
+    database.db.commit()
+
 
 async def obtenirReponseUtilisateur(ctx, question, bot):
       # Affiche la question dans le canal Discord

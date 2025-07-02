@@ -6,7 +6,7 @@ import mysql.connector
 import os
 from openai import OpenAI
 from datetime import datetime
-from fonctions import generer_question_et_reponse, enregistrer_challenge_en_base, actualiserBDUtilisateur, obtenirReponseUtilisateur, verifier_reponse_utilisateur
+from fonctions import generer_question_et_reponse, enregistrer_challenge_en_base, actualiserBDUtilisateur, obtenirReponseUtilisateur, verifier_reponse_utilisateur, enregistrerReponse
 from database import db, cursor  # ✅ pour utiliser si besoin
 import asyncio
 load_dotenv() #charger le fichier .env
@@ -41,32 +41,41 @@ async def on_ready():
 async def on_member_join(member):
     await member.send(f"Welcome to the server {member.name}")
     
-@bot.event 
+@bot.event
 async def on_message(message):
-    if(message.author == bot.user):
+    if message.author == bot.user:
         return
-    if("shit" in message.content.lower()):
+
+    # Ignore les messages qui commencent par le préfixe des commandes (ex: !quizz)
+    ctx = await bot.get_context(message)
+    if ctx.command is not None:
+        await bot.process_commands(message)
+        return
+
+    if "shit" in message.content.lower():
         await message.delete()
         await message.channel.send(f"{message.author.mention} n'utilise pas ce mot")
 
-    await bot.process_commands(message) #pour que les autres messages soient lus en parallèle
-
-
+    await bot.process_commands(message)
 
 
 @bot.command()  #lorsque l'utilisateur veut faire un quizz
 async def quizz(ctx):
     await actualiserBDUtilisateur(ctx)
     # Génère la question + réponse
-    questionRep = await generer_question_et_reponse(client, model_name)
+    difficulte = 1
+    questionRep = await generer_question_et_reponse(client, model_name, difficulte)
     print("QUESTION COMPLÈTE :", questionRep)
 
     # Insère dans la base de données, et récupère juste la question pour l'affichage
-    questionEnvoye, reponseAttendu = enregistrer_challenge_en_base(questionRep)
+    questionEnvoye, reponseAttendu, idChallenge = enregistrer_challenge_en_base(questionRep, difficulte)
     reponseUtilisateur = await obtenirReponseUtilisateur(ctx, questionEnvoye, bot)
-    commentaire, est_correct = await verifier_reponse_utilisateur(client, model_name, questionEnvoye, reponseAttendu, reponseUtilisateur)
-    await ctx.send(commentaire)
+    commentaire, estCorrect = await verifier_reponse_utilisateur(client, model_name, questionEnvoye, reponseAttendu, reponseUtilisateur)
+    enregistrerReponse(ctx, idChallenge, reponseUtilisateur, estCorrect)
 
+  
+    if(estCorrect): 
+        await ctx.send(f"\nTu as gagné {difficulte*5} points !")
   
 bot.run(token, log_handler=gestionnaire, log_level=logging.DEBUG)
 
