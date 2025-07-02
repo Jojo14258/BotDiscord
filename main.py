@@ -6,7 +6,7 @@ import mysql.connector
 import os
 from openai import OpenAI
 from datetime import datetime
-from fonctions import generer_question_et_reponse, enregistrer_challenge_en_base, actualiserBDUtilisateur, obtenirReponseUtilisateur, verifier_reponse_utilisateur, enregistrerReponse
+from fonctions import generer_question_et_reponse, enregistrer_challenge_en_base, actualiserBDUtilisateur, obtenirReponseUtilisateur, verifier_reponse_utilisateur, enregistrerReponse, ajouter_points_utilisateur, obtenirScoreUtilisateur;
 from database import db, cursor  # ✅ pour utiliser si besoin
 import asyncio
 load_dotenv() #charger le fichier .env
@@ -59,6 +59,15 @@ async def on_message(message):
     await bot.process_commands(message)
 
 
+
+@bot.command()  #lorsque l'utilisateur veut afficher son score total
+async def score(ctx):
+    score = obtenirScoreUtilisateur(ctx)
+    await ctx.send(f"{ctx.author.mention} tu as {score} points !  🥳" )
+
+
+
+
 @bot.command()  #lorsque l'utilisateur veut faire un quizz
 async def quizz(ctx):
     await actualiserBDUtilisateur(ctx)
@@ -72,10 +81,12 @@ async def quizz(ctx):
     reponseUtilisateur = await obtenirReponseUtilisateur(ctx, questionEnvoye, bot)
     commentaire, estCorrect = await verifier_reponse_utilisateur(client, model_name, questionEnvoye, reponseAttendu, reponseUtilisateur)
     enregistrerReponse(ctx, idChallenge, reponseUtilisateur, estCorrect)
+    await ctx.send(commentaire)
 
-  
-    if(estCorrect): 
-        await ctx.send(f"\nTu as gagné {difficulte*5} points !")
+    if estCorrect:
+        points = ajouter_points_utilisateur(ctx, difficulte)
+        await ctx.send(f"🎉 Tu as gagné **{points} points** !")
+ 
   
 bot.run(token, log_handler=gestionnaire, log_level=logging.DEBUG)
 

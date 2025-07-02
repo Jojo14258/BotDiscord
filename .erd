@@ -4,8 +4,8 @@
   "settings": {
     "width": 2000,
     "height": 2000,
-    "scrollTop": 0,
-    "scrollLeft": -265,
+    "scrollTop": -328,
+    "scrollLeft": -459,
     "zoomLevel": 1,
     "show": 431,
     "database": 4,
@@ -95,7 +95,8 @@
           "em5vDx24UTdQ0Y9MnWKhp",
           "0y2ClwT6hmfSqwJezbd3Y",
           "bHhUMw4Tu4bUe81gRMzgy",
-          "yTfOywKiJIBdpxpIQ5yWV"
+          "yTfOywKiJIBdpxpIQ5yWV",
+          "iTjS9nWti8D8u7wIoB_WI"
         ],
         "seqColumnIds": [
           "VEqrFrd789ROb6QmKnhaM",
@@ -105,18 +106,19 @@
           "0y2ClwT6hmfSqwJezbd3Y",
           "bHhUMw4Tu4bUe81gRMzgy",
           "yTfOywKiJIBdpxpIQ5yWV",
-          "Mmn4KB_4d9SRhWBWVa10V"
+          "Mmn4KB_4d9SRhWBWVa10V",
+          "iTjS9nWti8D8u7wIoB_WI"
         ],
         "ui": {
-          "x": 810.8575,
-          "y": 424.1139,
+          "x": 694.8575,
+          "y": 517.1139,
           "zIndex": 105,
           "widthName": 60,
           "widthComment": 60,
           "color": ""
         },
         "meta": {
-          "updateAt": 1751405640306,
+          "updateAt": 1751487070067,
           "createAt": 1751403970745
         }
       },
@@ -760,6 +762,26 @@
           "updateAt": 1751405539912,
           "createAt": 1751405457388
         }
+      },
+      "iTjS9nWti8D8u7wIoB_WI": {
+        "id": "iTjS9nWti8D8u7wIoB_WI",
+        "tableId": "UdZ7UU95sLMxkbFVrafd9",
+        "name": "points_value",
+        "comment": "Le nombre de point attribué pour une bonne réponse à ce challenge. Dépend de la difficulté",
+        "dataType": "INT",
+        "default": "",
+        "options": 8,
+        "ui": {
+          "keys": 0,
+          "widthName": 68,
+          "widthComment": 490,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1751487064177,
+          "createAt": 1751487012581
+        }
       }
     },
     "relationshipEntities": {
@@ -913,8 +935,8 @@
           "columnIds": [
             "VEqrFrd789ROb6QmKnhaM"
           ],
-          "x": 1115.3575,
-          "y": 424.1139,
+          "x": 1118.8575,
+          "y": 517.1139,
           "direction": 4
         },
         "end": {

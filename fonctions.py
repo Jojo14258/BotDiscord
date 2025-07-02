@@ -107,6 +107,10 @@ def enregistrerReponse(ctx, idChallenge, reponseUtilisateur, estCorrect):
     )
     database.db.commit()
 
+def obtenirScoreUtilisateur(ctx):
+    database.cursor.execute("SELECT score FROM users WHERE id = %s;", (ctx.author.id,))
+    score = database.cursor.fetchone()[0]
+    return score
 
 async def obtenirReponseUtilisateur(ctx, question, bot):
       # Affiche la question dans le canal Discord
@@ -168,6 +172,19 @@ Exemples :
 
     return commentaire, est_correcte
 
+def ajouter_points_utilisateur(ctx, difficulte):
+    """Ajoute des points à l'utilisateur en fonction de la difficulté."""
+    points = difficulte * 5
+    id_utilisateur = ctx.author.id
+    maintenant = datetime.now()
+
+    database.cursor.execute(
+        "UPDATE users SET score = score + %s, last_participation = %s WHERE id = %s",
+        (points, maintenant, id_utilisateur)
+    )
+    database.db.commit()
+
+    return points
 
 async def actualiserBDUtilisateur(ctx):
     verifier_connexion_mysql()
