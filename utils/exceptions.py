@@ -1,3 +1,7 @@
+"""
+Exceptions personnalisées pour le bot Quiz Discord
+"""
+
 class SyntaxeInvalide(Exception):
     def __init__(self):
         super().__init__("❌ **Syntaxe incorrecte !**\n\n"
@@ -16,9 +20,6 @@ class DifficulteInvalide(Exception):
                 "• **2** pour moyen\n"
                 "• **3** pour difficile\n\n"
                 "**Exemples :** `/quizz difficulte:2 specialite:Maths` ou `!quizz 2 Maths`")
-        
-
-
 
 class SpecialiteInvalide(Exception):
     def __init__(self):
@@ -33,5 +34,3 @@ class SpecialiteInvalide(Exception):
                 "• random (spécialité aléatoire)\n\n"
                 "**Syntaxe :** `/quizz difficulte:<1-3> specialite:<spécialité>` ou `!quizz <difficulté> <spécialité>`\n"
                 "**Exemples :** `/quizz difficulte:2 specialite:NSI` ou `!quizz 2 NSI`")
-        
-
