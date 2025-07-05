@@ -1,2 +1,22 @@
-discord.py
-python-dotenv
+# Discord bot framework
+discord.py>=2.3.0
+
+# Environment variables management
+python-dotenv>=1.0.0
+
+# Database connector for MySQL
+mysql-connector-python>=8.2.0
+
+# OpenAI API client for AI quiz generation
+openai>=1.3.0
+
+# HTTP requests (might be used by openai or other dependencies)
+requests>=2.31.0
+
+# Additional useful packages that might be needed
+# Date and time utilities (already in Python standard library)
+# datetime - built-in
+# random - built-in
+# logging - built-in
+# os - built-in
+# asyncio - built-in

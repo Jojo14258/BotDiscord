@@ -72,7 +72,7 @@ pip install -r requirements.txt
 ```sql
 -- Créer la base de données et les tables nécessaires
 CREATE DATABASE discord_quiz;
--- (Voir le fichier .env pour la structure complète)
+-- (Voir le fichier .erd pour la structure complète)
 ```
 
 4. **Configurer les variables d'environnement**
@@ -123,11 +123,9 @@ IA_TOKEN=votre_clé_groq_ici
 ### Lancement du bot
 
 ```bash
-# Version refactorisée (recommandée)
+# Version refactorisée
 python main_new.py
 
-# Version originale (legacy)
-python main.py
 ```
 
 ### Première utilisation

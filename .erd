@@ -4,7 +4,7 @@
   "settings": {
     "width": 2000,
     "height": 2000,
-    "scrollTop": -328,
+    "scrollTop": -428,
     "scrollLeft": -459,
     "zoomLevel": 1,
     "show": 431,
@@ -86,7 +86,7 @@
       },
       "UdZ7UU95sLMxkbFVrafd9": {
         "id": "UdZ7UU95sLMxkbFVrafd9",
-        "name": "Challenge",
+        "name": "Challenges",
         "comment": "",
         "columnIds": [
           "VEqrFrd789ROb6QmKnhaM",
@@ -118,7 +118,7 @@
           "color": ""
         },
         "meta": {
-          "updateAt": 1751487070067,
+          "updateAt": 1751576699595,
           "createAt": 1751403970745
         }
       },
