@@ -39,11 +39,11 @@ Un bot Discord interactif pour créer des quiz éducatifs dans différentes spé
 Le projet suit une **architecture modulaire** pour une maintenance facile :
 
 ```
-📁 Services métier    → Logique applicative
-📁 Commandes         → Interface Discord  
-📁 UI               → Composants visuels
-📁 Database         → Accès aux données
-📁 Config           → Configuration centralisée
+📁 services         → Logique applicative
+📁 commands         → Interface Discord  
+📁 ui               → Composants visuels
+📁 database         → Accès aux données
+📁 config           → Configuration centralisée
 ```
 
 ## 🚀 Installation
