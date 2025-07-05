@@ -1,0 +1,13 @@
+class SpecialiteInvalide(Exception):
+    def __init__(self):
+        super().__init__("❌ **Spécialité invalide !**\n\n"
+                "**Spécialités disponibles :**\n"
+                "• Maths\n"
+                "• NSI\n"
+                "• Physique-Chimie\n"
+                "• SVT\n"
+                "• SES\n"
+                "• HGGSP\n"
+                "• random (spécialité aléatoire)\n\n"
+                "**Syntaxe :** `!quizz <difficulté> <spécialité>`\n"
+                "**Exemple :** `!quizz 2 NSI`")

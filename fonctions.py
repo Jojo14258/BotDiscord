@@ -6,25 +6,38 @@ import mysql.connector
 import asyncio
 import random
 from dotenv import load_dotenv
+from Exceptions import *
 load_dotenv()
 
 
 # Fonction pour générer une question de spécialité
 import random
 
-async def generer_question_et_reponse(client, model_name, difficulte):
-    """Génère une question et réponse pour une spécialité choisie aléatoirement."""
+async def generer_question_et_reponse(client, model_name, difficulte, specialite):
+    """Génère une question et réponse selon une difficulté (1 à 3) pour une spécialité choisie aléatoirement."""
 
-    # Choix aléatoire de spécialité côté Python
     specialites = ["Maths", "NSI", "Physique-Chimie", "SVT", "SES", "HGGSP"]
-    specialite_choisie = random.choice(specialites)
+    if(specialite == "random"):
+        specialite_choisie = random.choice(specialites)
+    elif specialite in specialites:
+        specialite_choisie = specialite
+    else:
+        raise SpecialiteInvalide
 
-    # Création du prompt avec spécialité injectée
+    # Définir le niveau selon la difficulté
+    if difficulte == 1:
+        niveau = "facile et direct"
+    elif difficulte == 2:
+        niveau = "moyen, un peu plus piégeux"
+    else:
+        niveau = "complexe et demandant plus de réflexion"
+
+    # Créer le prompt
     prompt = f"""
-Tu es un assistant qui génère des questions de quiz pour le lycée.
+Tu es un assistant qui génère des questions de quiz pour aider les lycéens à réviser leur spé.
 
-Génère une question de quiz complexe mais résolvable en moins de 30 secs pour un élève de terminale mais qui est toujours du niveau, dans la spécialité suivante : {specialite_choisie}.
-
+Génère une question de quiz **{niveau}**, mais résoluble en moins de 30 secondes, pour un élève de terminale spé, dans la spécialité suivante : {specialite_choisie}.
+Attention, la question doit bien faire partie du programme de lycée.
 Donne uniquement la question suivie de sa réponse attendue, dans ce format :
 
 Sujet: {specialite_choisie}
@@ -32,7 +45,7 @@ Question: [Texte de la question]
 Réponse: [La bonne réponse]
 """
 
-    # Appel à l'API OpenAI
+    # Appel API
     response = client.chat.completions.create(
         model=model_name,
         messages=[
@@ -43,9 +56,7 @@ Réponse: [La bonne réponse]
         max_tokens=500
     )
 
-    # Retourne la question complète, déjà formatée
     return response.choices[0].message.content.strip()
-
 
 def verifier_connexion_mysql():
     try:
@@ -172,19 +183,20 @@ Exemples :
 
     return commentaire, est_correcte
 
-def ajouter_points_utilisateur(ctx, difficulte):
+def ajouter_points_utilisateur(ctx, idChallenge):
     """Ajoute des points à l'utilisateur en fonction de la difficulté."""
-    points = difficulte * 5
+    database.cursor.execute("SELECT points_value FROM challenges WHERE id = %s", (idChallenge,))
+    pts = database.cursor.fetchone()[0]
     id_utilisateur = ctx.author.id
     maintenant = datetime.now()
 
     database.cursor.execute(
         "UPDATE users SET score = score + %s, last_participation = %s WHERE id = %s",
-        (points, maintenant, id_utilisateur)
+        (pts, maintenant, id_utilisateur)
     )
     database.db.commit()
 
-    return points
+    return pts
 
 async def actualiserBDUtilisateur(ctx):
     verifier_connexion_mysql()
