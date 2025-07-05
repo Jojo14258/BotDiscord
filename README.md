@@ -59,8 +59,8 @@ Le projet suit une **architecture modulaire** pour une maintenance facile :
 
 1. **Cloner le repository**
 ```bash
-git clone https://github.com/votre-username/discord-quiz-bot.git
-cd discord-quiz-bot
+git clone https://github.com/Jojo14258votre-username/BotDiscord
+cd BotDiscord
 ```
 
 2. **Installer les dépendances**
