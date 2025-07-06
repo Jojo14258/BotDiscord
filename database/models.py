@@ -45,6 +45,17 @@ class User:
         )
         db_connection.db.commit()
 
+    @staticmethod
+    def get_ranking(nb: int) -> list:
+        """Récupère les nb premiers utilisateurs avec le plus de points"""
+        db_connection.verify_connection()
+        db_connection.cursor.execute(
+            "SELECT id, username, score FROM users ORDER BY score DESC LIMIT %s",
+            (nb,)
+        )
+        results = db_connection.cursor.fetchall()
+        return results if results else []
+
 class Challenge:
     """Gestion des défis/questions"""
     

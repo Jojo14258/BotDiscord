@@ -4,6 +4,7 @@ Commandes avec préfixe pour Discord
 import discord
 from discord.ext import commands
 from services.quiz_service import quiz_service
+from database.models import User
 from utils.exceptions import SpecialiteInvalide, DifficulteInvalide, SyntaxeInvalide
 from config.settings import settings
 import asyncio
@@ -53,6 +54,81 @@ def setup_prefix_commands(bot):
         )
         
         await ctx.send(embed=embed)
+
+    @bot.command()
+    async def classement(ctx):
+        """Commande !classement pour afficher la liste des joueurs avec le plus de points"""
+        try:
+            # Récupérer le top 10 des joueurs
+            top_players = User.get_ranking(10)
+            
+            if not top_players:
+                await ctx.send("🏆 Aucun joueur n'a encore de points !")
+                return
+            
+            embed = discord.Embed(
+                title="🏆 Classement global des participants",
+                description="Voici les meilleurs joueurs !",
+                color=0xFFD700  # Couleur or
+            )
+            
+            # Afficher le top 3 avec photos de profil
+            podium_emojis = ["🥇", "🥈", "🥉"]
+            
+            for i, (user_id, username, score) in enumerate(top_players[:3]):
+                user = bot.get_user(user_id)
+                
+                embed.add_field(
+                    name=f"{podium_emojis[i]} **{i+1}. {username}**",
+                    value=f"💎 **{score} points**",
+                    inline=True
+                )
+                
+                # Ajouter la photo de profil uniquement pour le 1er et s'il existe
+                if i == 0 and user:
+                    try:
+                        avatar_url = user.avatar.url if user.avatar else user.default_avatar.url
+                        embed.set_thumbnail(url=avatar_url)
+                    except Exception:
+                        pass  # Si erreur avec l'avatar, on ignore simplement
+            
+            # Ajouter le reste du classement (4-10) de manière compacte
+            if len(top_players) > 3:
+                autres_joueurs = ""
+                for i, (user_id, username, score) in enumerate(top_players[3:], 4):
+                    autres_joueurs += f"**{i}.** {username} - {score} pts\n"
+                
+                if autres_joueurs:
+                    embed.add_field(
+                        name="📊 Reste du classement",
+                        value=autres_joueurs,
+                        inline=False
+                    )
+            
+            # Ajouter la position de l'utilisateur actuel s'il n'est pas dans le top 10
+            user_score = User.get_score(ctx.author.id)
+            user_in_top = False  # Initialiser à False par défaut
+            
+            # Option 1: Avec while (votre approche corrigée)
+            i = 0
+            while i < len(top_players) and not user_in_top:
+                if ctx.author.id == top_players[i][0]:
+                    user_in_top = True
+                i += 1   
+            if not user_in_top and user_score > 0:
+                embed.add_field(
+                    name="📍 Ta position",
+                    value=f"{ctx.author.mention} - {user_score} points",
+                    inline=False
+                )
+            
+            embed.set_footer(text="💡 Utilise !quizz pour gagner des points !")
+            
+            await ctx.send(embed=embed)
+            
+        except Exception as e:
+            await ctx.send(f"❌ Erreur lors de l'affichage du classement : {e}")
+            print(f"Erreur dans classement: {e}")
 
     @bot.command()
     async def quizz(ctx, difficulte=None, specialite=None):

@@ -4,6 +4,7 @@ Slash commands pour Discord
 import discord
 from discord import app_commands
 from discord.app_commands import Choice
+from database.models import User
 from services.quiz_service import quiz_service
 from ui.views import QuizView
 from utils.exceptions import SpecialiteInvalide, DifficulteInvalide, SyntaxeInvalide
@@ -21,6 +22,83 @@ def setup_slash_commands(bot):
         except Exception as e:
             await interaction.response.send_message(f"❌ Erreur : {e}")
             print(f"Erreur dans slash_score: {e}")
+
+
+    @bot.tree.command(name="classement", description="Affiche le classement global des participants")
+    async def slash_classement(interaction: discord.Interaction):
+        """Commande /classement pour afficher la liste des joueurs avec le plus de points"""
+        try:
+            # Récupérer le top 10 des joueurs
+            top_players = User.get_ranking(10)
+            
+            if not top_players:
+                await interaction.response.send_message("🏆 Aucun joueur n'a encore de points !")
+                return
+            
+            embed = discord.Embed(
+                title="🏆 Classement global des participants",
+                description="Voici les meilleurs joueurs !",
+                color=0xFFD700  # Couleur or
+            )
+            
+            # Afficher le top 3 avec photos de profil
+            podium_emojis = ["🥇", "🥈", "🥉"]
+            
+            for i, (user_id, username, score) in enumerate(top_players[:3]):
+                user = bot.get_user(user_id)
+                
+                embed.add_field(
+                    name=f"{podium_emojis[i]} **{i+1}. {username}**",
+                    value=f"💎 **{score} points**",
+                    inline=True
+                )
+                
+                # Ajouter la photo de profil uniquement pour le 1er et s'il existe
+                if i == 0 and user:
+                    try:
+                        avatar_url = user.avatar.url if user.avatar else user.default_avatar.url
+                        embed.set_thumbnail(url=avatar_url)
+                    except Exception:
+                        pass  # Si erreur avec l'avatar, on ignore simplement
+            
+            # Ajouter le reste du classement (4-10) de manière compacte
+            if len(top_players) > 3:
+                autres_joueurs = ""
+                for i, (user_id, username, score) in enumerate(top_players[3:], 4):
+                    autres_joueurs += f"**{i}.** {username} - {score} pts\n"
+                
+                if autres_joueurs:
+                    embed.add_field(
+                        name="📊 Reste du classement",
+                        value=autres_joueurs,
+                        inline=False
+                    )
+            
+            # Ajouter la position de l'utilisateur actuel s'il n'est pas dans le top 10
+            user_score = User.get_score(interaction.user.id)
+            user_in_top = False  # Initialiser à False par défaut
+            
+            # Option 1: Avec while (votre approche corrigée)
+            i = 0
+            while i < len(top_players) and not user_in_top:
+                if interaction.user.id == top_players[i][0]:
+                    user_in_top = True
+                i += 1   
+            if not user_in_top and user_score > 0:
+                embed.add_field(
+                    name="📍 Ta position",
+                    value=f"{interaction.user.mention} - {user_score} points",
+                    inline=False
+                )
+            
+            embed.set_footer(text="💡 Utilise !quizz pour gagner des points !")
+            
+            await interaction.response.send_message(embed=embed)
+            
+        except Exception as e:
+            await interaction.response.send_message(f"❌ Erreur lors de l'affichage du classement : {e}")
+            print(f"Erreur dans classement: {e}")
+            
 
     @bot.tree.command(name="aide", description="Affiche l'aide pour toutes les commandes disponibles")
     async def slash_aide(interaction: discord.Interaction):
