@@ -7,6 +7,7 @@ from services.quiz_service import quiz_service
 from database.models import User
 from utils.exceptions import SpecialiteInvalide, DifficulteInvalide, SyntaxeInvalide
 from config.settings import settings
+from services.latex_service import LatexService
 import asyncio
 
 def setup_prefix_commands(bot):
@@ -152,7 +153,15 @@ def setup_prefix_commands(bot):
             
             # Afficher la question
             await ctx.send(f"🧠 **Défi pour {ctx.author.mention} :**\n{question}")
+            print(f"Question posée à {ctx.author} : {question}")
             
+            # Générer une image si la question contient du LaTeX
+            if LatexService.contains_latex(question):
+                success = LatexService.latex_to_image(question, 'question_latex.png')
+                if success:
+                    await ctx.send(file=discord.File('question_latex.png'))
+        
+                
             # Attendre la réponse de l'utilisateur
             def check(m):
                 return m.author == ctx.author and m.channel == ctx.channel
@@ -172,7 +181,19 @@ def setup_prefix_commands(bot):
                 )
                 
                 await ctx.send(comment)
+                # Générer une image si la question contient du LaTeX
+                if LatexService.contains_latex(comment):
+                    success = LatexService.latex_to_image(comment, 'reponse_latex.png')
+                if success:
+                    await ctx.send(file=discord.File('reponse_latex.png'))
+        
                 
+                # Générer une image si le commentaire contient du LaTeX
+                if LatexService.contains_latex(comment):
+                    success = LatexService.latex_to_image(comment, 'comment_latex.png')
+                    if success:
+                        await ctx.send(file=discord.File('comment_latex.png'))
+              
                 if is_correct:
                     await ctx.send(f"🎉 Tu as gagné **{points_earned} points** !")
                     

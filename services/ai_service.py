@@ -40,7 +40,7 @@ class AIService:
 Tu es un assistant qui génère des questions de quiz pour aider les lycéens à réviser leur spé.
 
 Génère une question de quiz **{level}**, mais résoluble en moins de 30 secondes, pour un élève de terminale spé, dans la spécialité suivante : {speciality_chosen}.
-Attention, la question doit bien faire partie du programme de lycée.
+Attention, la question doit bien faire partie du programme de lycée. 
 Donne uniquement la question suivie de sa réponse attendue, dans ce format :
 
 Sujet: {speciality_chosen}
