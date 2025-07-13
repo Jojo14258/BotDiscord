@@ -32,7 +32,7 @@ class LatexService:
   
     @staticmethod
     def extract_and_format_latex(text: str) -> str:
-        """Extrait les formules LaTeX et formate le texte pour une image"""
+        """Extrait les formules LaTeX et formate le texte pour une image en préservant les retours à la ligne"""
         print(f"[DEBUG] Texte original: {repr(text)}")
         
         # Remplacer les caractères Unicode problématiques
@@ -65,8 +65,9 @@ class LatexService:
         text = re.sub(r'\$\$([^$]+)\$\$', r' $$\1$$ ', text)
         print(f"[DEBUG] Après ajout espaces: {repr(text)}")
         
-        # Nettoyer les espaces multiples
-        text = re.sub(r'\s+', r' ', text)
+        # Nettoyer les espaces multiples SAUF les retours à la ligne
+        text = re.sub(r'[ \t]+', r' ', text)  # Remplacer espaces/tabs multiples par un seul espace
+        text = re.sub(r' *\n *', r'\n', text)  # Nettoyer espaces autour des retours à la ligne
         print(f"[DEBUG] Après nettoyage espaces: {repr(text)}")
         
         result = text.strip()
@@ -74,50 +75,47 @@ class LatexService:
         return result
     
     @staticmethod
-    def latex_to_image(texte: str, filename: str, width: int = 1000, height: int = 600):
-        """Convertit le texte contenant du LaTeX en image bien formatée"""
+    def latex_to_image(texte: str, filename: str, width: int = 520, height: int = 600):
+        """Convertit le texte contenant du LaTeX en image bien formatée avec largeur Discord"""
         fig = None
         try:
-            # Extraire et formatter le texte LaTeX
+            # Extraire et formatter le texte LaTeX en préservant les retours à la ligne
             formatted_text = LatexService.extract_and_format_latex(texte)
             
             # Si le texte formaté est vide, on utilise le texte original
             if not formatted_text.strip():
                 formatted_text = texte
             
-            # Ajuster la taille en fonction de la longueur du texte
-            text_length = len(formatted_text)
-            if text_length > 200:
-                fig_width, fig_height = width/80, height/80  # Plus grand pour long texte
-                fontsize = 12
-            elif text_length > 100:
-                fig_width, fig_height = width/90, height/90
-                fontsize = 13
-            else:
-                fig_width, fig_height = width/100, height/100
-                fontsize = 14
+            # Largeur fixe similaire à un message Discord (environ 520px)
+            # Hauteur adaptative basée sur le nombre de lignes
+            lines_count = formatted_text.count('\n') + 1
+            
+            # Ajuster la taille pour correspondre à Discord
+            fig_width = 6.5  # Largeur fixe équivalent à un message Discord
+            fig_height = max(2, lines_count * 0.4 + 1)  # Hauteur adaptative
+            fontsize = 11  # Taille de police similaire à Discord
             
             # Créer une figure adaptée
             fig, ax = plt.subplots(figsize=(fig_width, fig_height))
             
             # Configurer l'affichage avec une gestion d'erreur pour LaTeX
             try:
-                ax.text(0.5, 0.5, formatted_text, fontsize=fontsize, ha='center', va='center', 
-                       transform=ax.transAxes, wrap=True, 
+                ax.text(0.05, 0.95, formatted_text, fontsize=fontsize, ha='left', va='top', 
+                       transform=ax.transAxes, wrap=False, linespacing=1.2,
                        bbox=dict(boxstyle="round,pad=0.5", facecolor="lightblue", alpha=0.8))
             except Exception as latex_error:
                 print(f"[WARNING] Erreur LaTeX, utilisation du texte sans formatage: {latex_error}")
                 # Fallback: utiliser le texte original sans LaTeX
                 plain_text = re.sub(r'\\[a-zA-Z]+\{.*?\}', '', texte)  # Supprimer les commandes LaTeX
                 plain_text = re.sub(r'[\$\\]', '', plain_text)  # Supprimer $ et \
-                ax.text(0.5, 0.5, plain_text, fontsize=fontsize, ha='center', va='center', 
-                       transform=ax.transAxes, wrap=True, 
+                ax.text(0.05, 0.95, plain_text, fontsize=fontsize, ha='left', va='top', 
+                       transform=ax.transAxes, wrap=False, linespacing=1.2,
                        bbox=dict(boxstyle="round,pad=0.5", facecolor="lightblue", alpha=0.8))
             
             ax.axis('off')
             
             # Sauvegarder avec fond blanc
-            plt.savefig(filename, bbox_inches='tight', dpi=300, facecolor='white', 
+            plt.savefig(filename, bbox_inches='tight', dpi=150, facecolor='white', 
                        edgecolor='none', pad_inches=0.2)
             plt.close(fig)
             
