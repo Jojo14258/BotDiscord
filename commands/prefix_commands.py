@@ -181,12 +181,6 @@ def setup_prefix_commands(bot):
                 )
                 
                 await ctx.send(comment)
-                # Générer une image si la question contient du LaTeX
-                if LatexService.contains_latex(comment):
-                    success = LatexService.latex_to_image(comment, 'reponse_latex.png')
-                if success:
-                    await ctx.send(file=discord.File('reponse_latex.png'))
-        
                 
                 # Générer une image si le commentaire contient du LaTeX
                 if LatexService.contains_latex(comment):

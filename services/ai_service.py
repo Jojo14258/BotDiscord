@@ -78,16 +78,17 @@ Voici ce que l'utilisateur a répondu :
 
 Ta mission :
 1. Indique si la réponse est correcte ou non.
-2. Commence toujours par "✅ Bien joué !" si c'est correct, ou "❌ Oups..." si c'est incorrect.
+2. Commence toujours par "Bien joué !" si c'est correct, ou "Oups..." si c'est incorrect.
 3. Si la réponse est fausse, donne la bonne réponse, avec une explication claire, simple et sans jugement.
 4. Termine par [OK=true] si la réponse est correcte, sinon [OK=false].
 5. Utilise un ton amical, motivant et encourageant – comme un prof sympa qui veut aider.
+6. IMPORTANT: N'utilise pas d'émojis ou de caractères spéciaux Unicode (❌, ✅, etc.) car ils posent des problèmes d'affichage.
 
 Exemples :
-✅ Bien joué ! Ta réponse est correcte. (...)
+Bien joué ! Ta réponse est correcte. (...)
 [OK=true]
 
-❌ Oups... Ce n'est pas tout à fait ça. La bonne réponse est : (...). Mais ne t'inquiète pas, tu vas progresser ! 💪
+Oups... Ce n'est pas tout à fait ça. La bonne réponse est : (...). Mais ne t'inquiète pas, tu vas progresser !
 [OK=false]
 """
         

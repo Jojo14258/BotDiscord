@@ -35,25 +35,34 @@ class LatexService:
         """Extrait les formules LaTeX et formate le texte pour une image"""
         print(f"[DEBUG] Texte original: {repr(text)}")
         
+        # Remplacer les caractères Unicode problématiques
+        text = text.replace('\u274c', 'X')  # ❌ -> X
+        text = text.replace('\u2705', 'V')  # ✅ -> V
+        text = text.replace('\u2713', 'V')  # ✓ -> V
+        print(f"[DEBUG] Après remplacement Unicode: {repr(text)}")
+        
         # Remplacer toutes les formules LaTeX par des versions compatibles
         # Convertir \( ... \) en $ ... $ (toutes les occurrences)
-        text = re.sub(r'\\\((.*?)\\\)', r'$\1$', text)
+        text = re.sub(r'\\\((.*?)\\\)', r'$\1$', text, flags=re.DOTALL)
         print(f"[DEBUG] Après conversion \\(...\\): {repr(text)}")
         
-        # Convertir \[ ... \] en $ ... $ (display math -> inline pour simplicité)
-        text = re.sub(r'\\\[(.*?)\\\]', r'$\1$', text)
+        # Convertir \[ ... \] en $ ... $ (display math -> inline pour simplicité) 
+        # Utilisation d'un pattern plus robuste
+        text = re.sub(r'\\\[(.*?)\\\]', r'$$\1$$', text, flags=re.DOTALL)
         print(f"[DEBUG] Après conversion \\[...\\]: {repr(text)}")
         
-        # Nettoyer les doubles $ qui peuvent apparaître ($$ -> $)
-        text = re.sub(r'\$\$+', r'$', text)
-        print(f"[DEBUG] Après nettoyage $$: {repr(text)}")
+        # Nettoyer les doubles $ qui peuvent apparaître (mais garder $$ pour display math)
+        text = re.sub(r'\$\$\$+', r'$$', text)
+        print(f"[DEBUG] Après nettoyage $$$: {repr(text)}")
         
         # Nettoyer les $ vides qui peuvent apparaître
         text = re.sub(r'\$\s*\$', r'', text)
+        text = re.sub(r'\$\$\s*\$\$', r'', text)
         print(f"[DEBUG] Après nettoyage $ vides: {repr(text)}")
         
         # Ajouter des espaces autour des formules pour une meilleure lisibilité
         text = re.sub(r'\$([^$]+)\$', r' $\1$ ', text)
+        text = re.sub(r'\$\$([^$]+)\$\$', r' $$\1$$ ', text)
         print(f"[DEBUG] Après ajout espaces: {repr(text)}")
         
         # Nettoyer les espaces multiples
@@ -67,9 +76,14 @@ class LatexService:
     @staticmethod
     def latex_to_image(texte: str, filename: str, width: int = 1000, height: int = 600):
         """Convertit le texte contenant du LaTeX en image bien formatée"""
+        fig = None
         try:
             # Extraire et formatter le texte LaTeX
             formatted_text = LatexService.extract_and_format_latex(texte)
+            
+            # Si le texte formaté est vide, on utilise le texte original
+            if not formatted_text.strip():
+                formatted_text = texte
             
             # Ajuster la taille en fonction de la longueur du texte
             text_length = len(formatted_text)
@@ -86,10 +100,20 @@ class LatexService:
             # Créer une figure adaptée
             fig, ax = plt.subplots(figsize=(fig_width, fig_height))
             
-            # Configurer l'affichage
-            ax.text(0.5, 0.5, formatted_text, fontsize=fontsize, ha='center', va='center', 
-                   transform=ax.transAxes, wrap=True, 
-                   bbox=dict(boxstyle="round,pad=0.5", facecolor="lightblue", alpha=0.8))
+            # Configurer l'affichage avec une gestion d'erreur pour LaTeX
+            try:
+                ax.text(0.5, 0.5, formatted_text, fontsize=fontsize, ha='center', va='center', 
+                       transform=ax.transAxes, wrap=True, 
+                       bbox=dict(boxstyle="round,pad=0.5", facecolor="lightblue", alpha=0.8))
+            except Exception as latex_error:
+                print(f"[WARNING] Erreur LaTeX, utilisation du texte sans formatage: {latex_error}")
+                # Fallback: utiliser le texte original sans LaTeX
+                plain_text = re.sub(r'\\[a-zA-Z]+\{.*?\}', '', texte)  # Supprimer les commandes LaTeX
+                plain_text = re.sub(r'[\$\\]', '', plain_text)  # Supprimer $ et \
+                ax.text(0.5, 0.5, plain_text, fontsize=fontsize, ha='center', va='center', 
+                       transform=ax.transAxes, wrap=True, 
+                       bbox=dict(boxstyle="round,pad=0.5", facecolor="lightblue", alpha=0.8))
+            
             ax.axis('off')
             
             # Sauvegarder avec fond blanc
@@ -101,7 +125,7 @@ class LatexService:
             
         except Exception as e:
             print(f"Erreur lors de la génération LaTeX: {e}")
-            if 'fig' in locals():
+            if fig is not None:
                 plt.close(fig)
             return False
 
