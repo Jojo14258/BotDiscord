@@ -75,7 +75,7 @@ class LatexService:
         return result
     
     @staticmethod
-    def latex_to_image(texte: str, filename: str, width: int = 520, height: int = 600):
+    def latex_to_image(texte: str, filename: str, width: int = 460, height: int = 600):
         """Convertit le texte contenant du LaTeX en image bien formatée avec largeur Discord"""
         fig = None
         try:
@@ -86,22 +86,24 @@ class LatexService:
             if not formatted_text.strip():
                 formatted_text = texte
             
-            # Largeur fixe similaire à un message Discord (environ 520px)
+            # Largeur optimisée pour Discord (460px ~ largeur message Discord standard)
             # Hauteur adaptative basée sur le nombre de lignes
             lines_count = formatted_text.count('\n') + 1
             
-            # Ajuster la taille pour correspondre à Discord
-            fig_width = 6.5  # Largeur fixe équivalent à un message Discord
-            fig_height = max(2, lines_count * 0.4 + 1)  # Hauteur adaptative
-            fontsize = 11  # Taille de police similaire à Discord
+            # Dimensions optimisées pour correspondre exactement à Discord
+            # Discord utilise environ 460px de largeur pour les messages
+            fig_width_pixels = width  # Utiliser la largeur passée en paramètre (460px par défaut)
+            fig_width_inches = fig_width_pixels / 100  # Conversion approximative px vers pouces
+            fig_height = max(1.5, lines_count * 0.35 + 0.8)  # Hauteur adaptative plus compacte
+            fontsize = 12  # Taille de police ajustée pour Discord
             
-            # Créer une figure adaptée
-            fig, ax = plt.subplots(figsize=(fig_width, fig_height))
+            # Créer une figure adaptée avec les dimensions optimisées
+            fig, ax = plt.subplots(figsize=(fig_width_inches, fig_height))
             
             # Configurer l'affichage avec une gestion d'erreur pour LaTeX
             try:
                 ax.text(0.05, 0.95, formatted_text, fontsize=fontsize, ha='left', va='top', 
-                       transform=ax.transAxes, wrap=False, linespacing=1.2,
+                       transform=ax.transAxes, wrap=True, linespacing=1.3,
                        bbox=dict(boxstyle="round,pad=0.5", facecolor="lightblue", alpha=0.8))
             except Exception as latex_error:
                 print(f"[WARNING] Erreur LaTeX, utilisation du texte sans formatage: {latex_error}")
@@ -109,14 +111,15 @@ class LatexService:
                 plain_text = re.sub(r'\\[a-zA-Z]+\{.*?\}', '', texte)  # Supprimer les commandes LaTeX
                 plain_text = re.sub(r'[\$\\]', '', plain_text)  # Supprimer $ et \
                 ax.text(0.05, 0.95, plain_text, fontsize=fontsize, ha='left', va='top', 
-                       transform=ax.transAxes, wrap=False, linespacing=1.2,
+                       transform=ax.transAxes, wrap=True, linespacing=1.3,
                        bbox=dict(boxstyle="round,pad=0.5", facecolor="lightblue", alpha=0.8))
             
             ax.axis('off')
             
-            # Sauvegarder avec fond blanc
-            plt.savefig(filename, bbox_inches='tight', dpi=150, facecolor='white', 
-                       edgecolor='none', pad_inches=0.2)
+            # Sauvegarder avec paramètres optimisés pour Discord
+            # DPI réduit pour équilibrer qualité/taille, dimensions exactes pour Discord
+            plt.savefig(filename, bbox_inches='tight', dpi=120, facecolor='white', 
+                       edgecolor='none', pad_inches=0.15)
             plt.close(fig)
             
             return True
