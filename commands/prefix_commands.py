@@ -1,6 +1,7 @@
 """
 Commandes avec préfixe pour Discord
 """
+import os
 import discord
 from discord.ext import commands
 from services.quiz_service import quiz_service
@@ -160,6 +161,7 @@ def setup_prefix_commands(bot):
                 success = LatexService.latex_to_image(question, 'question_latex.png')
                 if success:
                     await ctx.send(file=discord.File('question_latex.png'))
+                    os.remove('question_latex.png') #l'image n'est pas stockée
         
                 
             # Attendre la réponse de l'utilisateur

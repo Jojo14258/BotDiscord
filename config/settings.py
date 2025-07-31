@@ -21,7 +21,7 @@ class Settings:
     
     # IA
     AI_TOKEN = os.getenv('IA_TOKEN')
-    AI_MODEL = "mistral-saba-24b"
+    AI_MODEL = "gemma2-9b-it"
     AI_BASE_URL = "https://api.groq.com/openai/v1"
     
     # Quiz
