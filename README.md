@@ -15,6 +15,16 @@ Un bot Discord de quiz scolaire avec IA, slash commands et rendu LaTeX, persista
 - Structure du projet
 - Dépannage
 
+## ⚠️ Attention
+
+Malgré l’état abouti du code, les résultats ne satisfont pas les objectifs initiaux du projet. Voici certains problèmes majeurs persistants
+
+- L’IA génère parfois des questions hors programme du lycée (contenus non conformes ou hors niveau).
+- Les corrections produites par l’IA peuvent être inexactes ou trompeuses (fausses justifications).
+- Le rendu LaTeX peut être incomplet ou illisible selon la complexité des expressions et l’installation LaTeX/matplotlib.
+
+ Vous êtes libre de reprendre ce projet pour l’améliorer, à condition de me créditer (Jordan) et de conserver la licence et la mention d’auteur. À envisager: limiter/contraindre les prompts, valider manuellement les contenus avant diffusion, ou basculer vers une banque de questions vérifiées pour un usage pédagogique fiable.
+
 ## ✨ Fonctionnalités
 
 - 🤖 Génération de questions via IA (Groq/OpenAI API) selon la difficulté et la spécialité
@@ -56,15 +66,17 @@ Le bot lit les variables d’environnement via `python-dotenv`. Exemple minimal:
 
 ```
 DISCORD_TOKEN=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-DB_PASSWORD=votre_mot_de_passe_mysql
 IA_TOKEN=cle_api_groq
+
+# Base de données (à compléter selon votre instance)
+DB_HOST=localhost
+DB_USER=votre_utilisateur
+DB_PASSWORD=votre_mot_de_passe
+DB_NAME=votre_base
 ```
 
 Autres paramètres par défaut (voir `config/settings.py`):
 - Préfixe commandes: `!`
-- Hôte MySQL: `badge.o2switch.net` (modifiez si besoin)
-- Utilisateur DB: `jipu4543_jordan`
-- Base DB: `jipu4543_ChallengeDiscord`
 - Modèle IA: `gemma2-9b-it`, Base URL: `https://api.groq.com/openai/v1`
 - Spécialités: Maths, NSI, Physique-Chimie, SVT, SES, HGGSP
 - Points: {1:5, 2:10, 3:15}

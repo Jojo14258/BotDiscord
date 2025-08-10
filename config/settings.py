@@ -14,10 +14,11 @@ class Settings:
     COMMAND_PREFIX = '!'
     
     # Base de données
-    DB_HOST = "badge.o2switch.net"
-    DB_USER = "jipu4543_jordan"
-    DB_PASSWORD = os.getenv('DB_PASSWORD')
-    DB_NAME = "jipu4543_ChallengeDiscord"
+    # Renseignez ces variables dans votre .env pour pointer vers VOTRE base
+    DB_HOST = os.getenv('DB_HOST', 'localhost')
+    DB_USER = os.getenv('DB_USER', '')
+    DB_PASSWORD = os.getenv('DB_PASSWORD', '')
+    DB_NAME = os.getenv('DB_NAME', '')
     
     # IA
     AI_TOKEN = os.getenv('IA_TOKEN')
