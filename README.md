@@ -1,294 +1,153 @@
 # 🧠 Bot Discord Quiz
 
-Un bot Discord interactif pour créer des quiz éducatifs dans différentes spécialités de lycée, utilisant l'intelligence artificielle pour générer des questions personnalisées.
+Un bot Discord de quiz scolaire avec IA, slash commands et rendu LaTeX, persistant les scores en MySQL.
 
-## 📋 Table des matières
+## 📋 Sommaire
 
-- [Fonctionnalités](#-fonctionnalités)
-- [Technologies utilisées](#-technologies-utilisées)
-- [Architecture du projet](#-architecture-du-projet)
-- [Installation](#-installation)
-- [Configuration](#-configuration)
-- [Utilisation](#-utilisation)
-- [Commandes disponibles](#-commandes-disponibles)
-- [Structure du projet](#-structure-du-projet)
-- [Contribution](#-contribution)
-- [Licence](#-licence)
+- Fonctionnalités
+- Prérequis
+- Installation (Windows/macOS/Linux)
+- Configuration (.env)
+- Base de données (schema.sql)
+- Lancer le bot
+- Commandes (slash et préfixe)
+- Rendu LaTeX (optionnel)
+- Structure du projet
+- Dépannage
 
 ## ✨ Fonctionnalités
 
-- 🎯 **Quiz interactifs** dans 6 spécialités de lycée
-- 🤖 **Génération automatique** de questions via IA (Groq/Mistral)
-- 📊 **Système de points** avec 3 niveaux de difficulté
-- 💬 **Support complet** des slash commands (`/`) et commandes préfixe (`!`)
-- 🔄 **Interface moderne** avec boutons et modals Discord
-- 📱 **Compatible DM et serveurs** Discord
-- 🗄️ **Persistance des données** avec MySQL
-- 📈 **Suivi des scores** et historique des réponses
+- 🤖 Génération de questions via IA (Groq/OpenAI API) selon la difficulté et la spécialité
+- 🧩 6 spécialités supportées (+ random) et 3 niveaux de difficulté
+- �️ Persistance MySQL des utilisateurs, défis et réponses
+- 🏆 Score cumulé, classement global, mention de votre position
+- 💬 Deux modes d’utilisation: slash commands modernes et commandes préfixe `!`
+- �️ Rendu d’énoncés/corrections contenant du LaTeX en image (affichage propre dans Discord)
+- 🧰 Architecture modulaire (services, database, ui, commands)
+- � Logs dans `logs/discord.log`
 
-## 🛠 Technologies utilisées
+## 🧱 Prérequis
 
-- **Python 3.8+** - Langage principal
-- **Discord.py** - Bibliothèque pour l'API Discord
-- **OpenAI/Groq API** - Génération de questions via IA
-- **MySQL** - Base de données pour la persistance
-- **python-dotenv** - Gestion des variables d'environnement
-
-## 🏗 Architecture du projet
-
-Le projet suit une **architecture modulaire** pour une maintenance facile :
-
-```
-📁 services         → Logique applicative
-📁 commands         → Interface Discord  
-📁 ui               → Composants visuels
-📁 database         → Accès aux données
-📁 config           → Configuration centralisée
-```
+- Python 3.10+ recommandé
+- MySQL/MariaDB accessible (identifiants dans `config/settings.py` et `.env`)
+- Un bot créé sur le Discord Developer Portal (token)
+- Une clé API Groq (utilisée via le SDK OpenAI)
+- Optionnel pour LaTeX: une distribution LaTeX installée (MiKTeX/TeX Live) + matplotlib
 
 ## 🚀 Installation
 
-### Prérequis
+1) Cloner le dépôt et se placer dans le dossier
 
-- Python 3.8 ou supérieur
-- MySQL Server
-- Un bot Discord configuré
-- Une clé API Groq
+2) (Recommandé) Créer un environnement virtuel et installer les dépendances
+    - Windows PowerShell:
+       - python -m venv .venv; .\.venv\Scripts\Activate.ps1; pip install -r requirements.txt
+    - macOS/Linux:
+       - python3 -m venv .venv; source .venv/bin/activate; pip install -r requirements.txt
 
-### Étapes d'installation
+3) Copier l’exemple d’environnement et complétez vos secrets
+    - Copier `.env.example` en `.env` puis renseigner les valeurs
 
-1. **Cloner le repository**
-```bash
-git clone https://github.com/Jojo14258votre-username/BotDiscord
-cd BotDiscord
+4) Créer la base et les tables
+    - Importer le contenu de `schema.sql` dans votre MySQL (via client/GUI)
+
+## ⚙️ Configuration (.env)
+
+Le bot lit les variables d’environnement via `python-dotenv`. Exemple minimal:
+
 ```
-
-2. **Installer les dépendances**
-```bash
-pip install -r requirements.txt
-```
-
-3. **Configurer la base de données**
-```sql
--- Créer la base de données et les tables nécessaires
-CREATE DATABASE discord_quiz;
--- (Voir le fichier .erd pour la structure complète)
-```
-
-4. **Configurer les variables d'environnement**
-```bash
-cp .env.example .env
-# Éditer le fichier .env avec vos valeurs
-```
-
-## ⚙️ Configuration
-
-Créez un fichier `.env` à la racine du projet :
-
-```env
-# Discord
-DISCORD_TOKEN=votre_token_discord_ici
-
-# Base de données
+DISCORD_TOKEN=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 DB_PASSWORD=votre_mot_de_passe_mysql
-
-# Intelligence Artificielle
-IA_TOKEN=votre_clé_groq_ici
+IA_TOKEN=cle_api_groq
 ```
 
-### Configuration Discord
+Autres paramètres par défaut (voir `config/settings.py`):
+- Préfixe commandes: `!`
+- Hôte MySQL: `badge.o2switch.net` (modifiez si besoin)
+- Utilisateur DB: `jipu4543_jordan`
+- Base DB: `jipu4543_ChallengeDiscord`
+- Modèle IA: `gemma2-9b-it`, Base URL: `https://api.groq.com/openai/v1`
+- Spécialités: Maths, NSI, Physique-Chimie, SVT, SES, HGGSP
+- Points: {1:5, 2:10, 3:15}
+- Timeout quiz: 60s, Timeout réponse: 30s
 
-1. Créer une application sur [Discord Developer Portal](https://discord.com/developers/applications)
-2. Créer un bot et récupérer le token
-3. Configurer les **scopes OAuth2** :
-   - `bot`
-   - `applications.commands`
-4. Configurer les **permissions** :
-   - Send Messages
-   - Use Slash Commands
-   - Add Reactions
-   - Read Message History
-5. Activer les **intents** :
-   - Message Content Intent
-   - Server Members Intent
+## 🗄️ Base de données
 
-### Configuration IA
+Les tables requises se trouvent dans `schema.sql` (users, challenges, submissions). Importez ce fichier dans votre base.
 
-1. Créer un compte sur [Groq](https://groq.com/)
-2. Générer une clé API
-3. L'ajouter dans votre fichier `.env`
+## ▶️ Lancer le bot
 
-## 🎮 Utilisation
+- Windows PowerShell:
+   - .\.venv\Scripts\Activate.ps1; python .\main.py
+- macOS/Linux:
+   - source .venv/bin/activate; python3 main.py
 
-### Lancement du bot
+Le bot synchronise les slash commands au démarrage. Les logs sont écrits dans `logs/discord.log`.
 
-```bash
-# Version refactorisée
-python main_new.py
+## 📝 Commandes
 
-```
+Slash commands:
+- /quizz difficulte:<1|2|3> specialite:<Maths|NSI|Physique-Chimie|SVT|SES|HGGSP|random>
+- /score — Affiche votre score
+- /classement — Top 10 et votre position
+- /aide — Récapitulatif
 
-### Première utilisation
+Commandes préfixe:
+- !quizz <difficulté> <spécialité>
+- !score
+- !classement
+- !aide
 
-1. Inviter le bot sur votre serveur avec l'URL OAuth2
-2. Tester avec `/aide` ou `!aide`
-3. Lancer votre premier quiz avec `/quizz difficulte:1 specialite:Maths`
+Barème des points:
+- 1 = 5 points, 2 = 10 points, 3 = 15 points (configurable dans `config/settings.py`)
 
-## 📝 Commandes disponibles
+## 🧮 Rendu LaTeX (optionnel)
 
-### Slash Commands (modernes)
+Si une question ou une correction contient du LaTeX, le bot tente de générer une image pour un affichage propre.
 
-| Commande | Description | Exemple |
-|----------|-------------|---------|
-| `/quizz` | Lance un quiz interactif | `/quizz difficulte:2 specialite:NSI` |
-| `/score` | Affiche votre score total | `/score` |
-| `/aide` | Aide et documentation | `/aide` |
+Dépendances supplémentaires déjà listées dans `requirements.txt`:
+- matplotlib (nécessite une distribution LaTeX si `text.usetex=True`)
+- ipython
 
-### Commandes préfixe (compatibilité)
+Sous Windows: installez MiKTeX (ou TeX Live) pour activer `usetex` dans matplotlib.
 
-| Commande | Description | Exemple |
-|----------|-------------|---------|
-| `!quizz` | Lance un quiz (mode texte) | `!quizz 2 NSI` |
-| `!score` | Affiche votre score total | `!score` |
-| `!aide` | Aide et documentation | `!aide` |
-
-### Paramètres
-
-**Difficultés :**
-- `1` - Facile (5 points)
-- `2` - Moyen (10 points)  
-- `3` - Difficile (15 points)
-
-**Spécialités disponibles :**
-- `Maths` - Mathématiques
-- `NSI` - Numérique et Sciences Informatiques
-- `Physique-Chimie` - Physique et Chimie
-- `SVT` - Sciences de la Vie et de la Terre
-- `SES` - Sciences Économiques et Sociales
-- `HGGSP` - Histoire-Géographie, Géopolitique et Sciences Politiques
-- `random` - Spécialité aléatoire
-
-## 📁 Structure du projet
+## � Structure
 
 ```
 BotDiscord/
-├── main_new.py              # Point d'entrée refactorisé
-├── main.py                  # Version originale (legacy)
-├── requirements.txt         # Dépendances Python
-├── .env                     # Variables d'environnement
-├── README.md               # Documentation
-│
-├── config/                 # Configuration
-│   ├── __init__.py
-│   └── settings.py         # Paramètres centralisés
-│
-├── database/               # Accès aux données  
-│   ├── __init__.py
-│   ├── connection.py       # Connexion MySQL
-│   └── models.py          # Modèles de données
-│
-├── commands/               # Commandes Discord
-│   ├── __init__.py
-│   ├── slash_commands.py   # Commandes /
-│   └── prefix_commands.py  # Commandes !
-│
-├── services/               # Logique métier
-│   ├── __init__.py
-│   ├── quiz_service.py     # Gestion des quiz
-│   └── ai_service.py       # Service IA
-│
-├── ui/                     # Interface utilisateur
-│   ├── __init__.py
-│   ├── modals.py          # Fenêtres popup
-│   └── views.py           # Boutons et vues
-│
-├── utils/                  # Utilitaires
-│   ├── __init__.py
-│   └── exceptions.py       # Exceptions personnalisées
-│
-└── logs/                   # Journaux
-    └── discord.log
+├── main.py
+├── requirements.txt
+├── .env (à créer)
+├── .env.example
+├── README.md
+├── schema.sql
+├── config/
+│   └── settings.py
+├── database/
+│   ├── connection.py
+│   └── models.py
+├── commands/
+│   ├── slash_commands.py
+│   └── prefix_commands.py
+├── services/
+│   ├── ai_service.py
+│   ├── quiz_service.py
+│   └── latex_service.py
+├── ui/
+│   ├── views.py
+│   └── modals.py
+├── utils/
+│   └── exceptions.py
+└── logs/
+      └── discord.log
 ```
 
-## 🎯 Exemple d'utilisation
+## 🛠️ Dépannage
 
-### Quiz avec slash command (moderne)
-
-1. Tapez `/quizz` dans Discord
-2. Sélectionnez la difficulté et la spécialité
-3. Cliquez sur "📝 Répondre" 
-4. Saisissez votre réponse dans la popup
-5. Recevez la correction et vos points !
-
-### Quiz avec commande préfixe (classique)
-
-1. Tapez `!quizz 2 Maths`
-2. Lisez la question affichée
-3. Répondez dans le chat
-4. Recevez la correction et vos points !
-
-## 🔧 Développement
-
-### Ajouter une nouvelle spécialité
-
-1. Modifier `config/settings.py` :
-```python
-SPECIALITES = ["Maths", "NSI", "Physique-Chimie", "SVT", "SES", "HGGSP", "Nouvelle-Spé"]
-```
-
-2. L'IA s'adaptera automatiquement aux nouvelles spécialités !
-
-### Modifier le système de points
-
-1. Ajuster dans `config/settings.py` :
-```python
-POINTS_PAR_DIFFICULTE = {1: 5, 2: 10, 3: 15, 4: 20}  # Exemple avec difficulté 4
-```
-
-## 🐛 Dépannage
-
-### Le bot ne répond pas
-
-1. Vérifier que le token Discord est valide
-2. S'assurer que les intents sont activés
-3. Vérifier la connexion à la base de données
-
-### Les slash commands n'apparaissent pas
-
-1. Vérifier les scopes OAuth2 (`applications.commands`)
-2. Ré-inviter le bot avec les bonnes permissions
-3. Attendre la synchronisation (jusqu'à 1h pour les DMs)
-
-### Erreurs de base de données
-
-1. Vérifier la connexion MySQL
-2. S'assurer que les tables existent
-3. Contrôler les permissions de l'utilisateur DB
-
-## 🤝 Contribution
-
-Les contributions sont les bienvenues ! Pour contribuer :
-
-1. Fork le projet
-2. Créez une branche feature (`git checkout -b feature/AmazingFeature`)
-3. Committez vos changements (`git commit -m 'Add some AmazingFeature'`)
-4. Push vers la branche (`git push origin feature/AmazingFeature`)
-5. Ouvrez une Pull Request
-
-## 📜 Licence
-
-Ce projet est sous licence MIT. Voir le fichier `LICENSE` pour plus de détails.
-
-## 👨‍💻 Auteur
-
-- **Jordan** - Développeur principal
-
-## 🙏 Remerciements
-
-- Discord.py pour l'excellente bibliothèque
-- Groq pour l'API IA performante
-- La communauté Discord pour les retours
+- Slash commands absentes: vérifier les scopes (`applications.commands`) et réinviter le bot; attendre la propagation (jusqu’à 1h en DM).
+- Connexion DB: vérifiez hôte/utilisateur/mot de passe; importez `schema.sql`; droits utilisateur.
+- IA: assurez-vous que `IA_TOKEN` est valide et que l’API Groq est accessible.
+- LaTeX: si l’image n’apparaît pas, installez une distribution LaTeX; sinon, le bot enverra le texte brut.
 
 ---
 
-**⭐ N'hésitez pas à m'envoyer votre retour si ce projet vous a aidé !**
+Made with ❤️ pour apprendre et réviser plus facilement.
